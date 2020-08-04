@@ -10,6 +10,7 @@ const app=express()
 const port=process.env.PORT
 const Router=new express.Router()
 
+
 app.use(morgan('common'))
 app.use('/prod_image',express.static('uploads'))
 app.use(express.json())
