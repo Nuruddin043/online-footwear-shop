@@ -1,9 +1,13 @@
 const mongooes=require('mongoose')
 const { model } = require('./reviews')
+const bcrypt=require('bcrypt')
+const validator=require('validator')
+const jwt=require('jsonwebtoken')
+
 const requireString={
     type:String,
-    required:true,
-    trim:true
+    trim:true,
+    required:true
 }
 const userSchema=mongooes.Schema({
     first_name:{
@@ -13,14 +17,20 @@ const userSchema=mongooes.Schema({
         ...requireString
     },
     email:{
-        type:email,
-       
+        ...requireString,
+        lowercase:true,
+        unique:true,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error('email is invalid')
+            }
+        }
     },
     phone_no:{
         type:Number,
         required:true,
         validate(value){
-            if(!value.length==11){
+            if(!value.length==10){
                 throw new Error('Number must be lenght of 11')
             }
         }
@@ -29,10 +39,10 @@ const userSchema=mongooes.Schema({
         street:{
             ...requireString
         },
-        City:{
+        city:{
             ...requireString
         },
-        State:{
+        state:{
             ...requireString
         },Zip:{
             type:Number
@@ -45,16 +55,45 @@ const userSchema=mongooes.Schema({
                 throw new Error('Password must be bigger then lenght 6')
             }
         }
-    }
+    },
+    tokens:[{
+        token:{
+            type:String,
+            required:true
+        }
+    }]
 
 })  
+userSchema.methods.toJSON= function(){
+    const user=this
+    const userObject= user.toObject()
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
+userSchema.methods.generateAuthToken=async function(){
+    const user=this
+    const token=jwt.sign({_id:user._id.toString()},process.env.ACCESS_TOKEN_SECRET)
+    user.tokens=user.tokens.concat({token})
+    await user.save()
+    return token
+}
 
-
-userSchema.virtual('reviews',{
-    ref:'Review',
-    localField:'_id',
-    foreignField:'user'
+userSchema.pre('save',async function(next){
+    const user=this
+    if(user.isModified('password')){
+        user.password=await bcrypt.hash(user.password,8)
+    }
+    next()
 })
+
+
+
+// userSchema.virtual('reviews',{
+//     ref:'Review',
+//     localField:'_id',
+//     foreignField:'user'
+// })
 
 
 const User=mongooes.model('User',userSchema)

@@ -3,6 +3,7 @@ require('dotenv').config()
 require('./db/mongoose')
 const productRouter=require('./routers/product')
 const categoryRouter=require('./routers/category')
+const userRouter=require('./routers/user')
 const morgan=require('morgan')
 const app=express()
 
@@ -14,8 +15,10 @@ const Router=new express.Router()
 app.use(morgan('common'))
 app.use('/prod_image',express.static('uploads'))
 app.use(express.json())
+app.use(userRouter)
 app.use(productRouter)
 app.use(categoryRouter)
+
 
 
 

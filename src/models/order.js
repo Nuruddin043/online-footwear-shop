@@ -29,3 +29,7 @@ const orderShcema={
         }
     }]
 }
+
+const Order=mongooes.model('Order',orderShcema)
+
+module.exports=Order

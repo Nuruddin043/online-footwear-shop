@@ -26,4 +26,4 @@ const reviewSchema= new mongooes.Schema({
 
 const Review=mongooes.model('Review',reviewSchema )
 
-module.export=Reviews
+module.export=Review
